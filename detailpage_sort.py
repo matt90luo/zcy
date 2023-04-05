@@ -8,11 +8,12 @@ import tensorflow
 import tensorflow as tf
 from tensorflow import keras
 from keras.layers import Dense, Flatten, Conv2D, Embedding, Input, Dot
-# from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession
 from tqdm import tqdm
 from keras import regularizers
 import time
 
+spark = SparkSession.builder
 """
 detailpage sort
 """
@@ -23,8 +24,8 @@ detailpage sort
 #         .enableHiveSupport() \
 #         .getOrCreate()
 
-input_sample = Input(shape=(32, ))
-input_context = Input(shape=(32, ))
+input_sample = Input(shape=(32, ), name="input_impression")
+input_context = Input(shape=(32, ), name="input_context")
 input_label = Input(shape=(1, ))
 input_weight = Input(shape=(1, ))
 
@@ -121,7 +122,6 @@ def train_step(x):
 
 EPOCHS = 10
 PARTITION_NUM = 500
-
 train_df = spark.sql("select embedding_query, context, weight, label from test.sort_sample")
 # train_data = spark.sparkContext.parallelize(np.random.randint(10, size=(1024, 3)).tolist(), 8)\
 #     .map(lambda x: [int(x[0]), [int(x[1])], [int(x[2])]]).repartition(16)\

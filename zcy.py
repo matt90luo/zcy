@@ -12,9 +12,7 @@ import os
 import re
 
 pd.set_option('display.max_columns', None)
-#显示所有行
 pd.set_option('display.max_rows', None)
-#设置value的显示长度为100，默认为50
 pd.set_option('max_colwidth',10000)
 
 
@@ -80,11 +78,11 @@ def observeTimeProcess(x):
 
 
 # IMPORTANT
-p = [[re.findall(example_re,example_str)[0][2], ecfProcess(fpathe, f)] for fpathe,dirs,fs in os.walk(nc_file_path) for f in fs]
-
-print("**************")
-print(type(p), len(p), type(p[0][0]), type(p[0][1]))
-print("**************")
+# p = [[re.findall(example_re,example_str)[0][2], ecfProcess(fpathe, f)] for fpathe, dirs, fs in os.walk(nc_file_path) for f in fs]
+#
+# print("**************")
+# print(type(p), len(p), type(p[0][0]), type(p[0][1]))
+# print("**************")
 
 
 #file_path = '/Volumes/zcy单位备份/sailing/nc_ecf/2022.09/2022093012/ecfine.I2022093012.057.F2022100221.nc'
@@ -100,6 +98,15 @@ fg310 = fn.variables['fg310']
 # u10 = fn.variables['u10']
 # v10 = fn.variables['v10']
 FG = fg310[:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
+
+print(type(FG), type(np.array(FG)))
+
+print(np.array(FG).reshape(-1).shape)
+
+# tmp_df = fn.to_dataframe()
+# print(tmp_df.info())
+# print(tmp_df.head(4))
+
 # U = u10[:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
 # V = v10[:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
 
@@ -115,9 +122,9 @@ df['v10'] = df.apply(lambda x: -x['WindVelocity10'] * np.cos(x['WindDirect10'] *
 df['ExMaxWindV'] = df['ExMaxWindV']*0.1
 print(df.head(2))
 
-df = df.sort_values(['StationNum','ObservTimes'],ascending=False).groupby('StationNum')
+#df = df.sort_values(['StationNum','ObservTimes'],ascending=False).groupby('StationNum')
 
-print(df.head(4))
+# print(df.head(2))
 
 #window analysis Important
 # df['tmp'] = df.apply(lambda x: (x['StationNum'], x['ExMaxWindV']), axis=1)
