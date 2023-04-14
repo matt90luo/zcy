@@ -35,6 +35,12 @@ lat_index_range = range(int((-lat_range[1] + lat_start) / delta_degree),
                         int((-lat_range[0] + lat_start) / delta_degree) + 1)
 target_stations = ['K2931', 'K2942', 'K2962']
 
+"K2913 lat:29.50 log:122.0"
+"K2942 lat:29.50 log:122.0"
+"K2962 lat:29.50 log:122.0"
+"Attention! lat is descresing!  lat:29.50 lat_idx=1, log:122.0 log_idx = 1"
+"so after reshape it is 1*3+1 = 4"
+
 NC_FILE_PATH = ['/Volumes/zcy单位备份/sailing/nc_ecf/2021.09'
     , '/Volumes/zcy单位备份/sailing/nc_ecf/2021.10'
     , '/Volumes/zcy单位备份/sailing/nc_ecf/2022.09'

@@ -100,8 +100,14 @@ fg310 = fn.variables['fg310']
 FG = fg310[:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
 
 print(type(FG), type(np.array(FG)))
-
+print(np.array(FG))
+print(np.array(FG).shape)
+print(np.array(FG).reshape(-1))
 print(np.array(FG).reshape(-1).shape)
+print(np.array(FG).reshape(-1)[[[4,]]])
+print(np.array([[1,2,3], [4,5,6]])[:, [1]])
+foo = np.array([[1,2,3], [4,5,6]])[:, [1]]
+print(np.tile(foo, (1, 3)))
 
 # tmp_df = fn.to_dataframe()
 # print(tmp_df.info())

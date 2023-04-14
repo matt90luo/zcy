@@ -26,6 +26,8 @@ def process(d, gap):
     test_examples = np.array(x[x['r'] < 0.2]['input'].values.tolist())
     train_labels = np.array(x[x['r'] >= 0.2]['label'].values.tolist())
     test_labels = np.array(x[x['r'] < 0.2]['label'].values.tolist())
+    test_time = x[x['r'] < 0.2]['F_time'].values.tolist()
+
     train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
     test_dataset = tf.data.Dataset.from_tensor_slices((test_examples, test_labels))
     BATCH_SIZE = 64
@@ -62,10 +64,11 @@ def process(d, gap):
     model.fit(train_dataset, validation_data=test_dataset, epochs=128, callbacks=[tensorboard_callback])
     # model.evaluate(test_dataset)
     MODEL_DICT[gap] = model
+    prediction = np.expand_dims(MODEL_DICT[gap].predict(test_examples), axis=1)
+    station = np.expand_dims(test_labels, axis=1)
+    foo_near_station = np.tile(test_examples[:, [[4]]], (1, 1, 3))
+    print(np.concatenate((prediction, station, foo_near_station), axis=1))
     return None
-    # prediction = np.expand_dims(MODEL_DICT[gap].predict(test_examples), axis=1)
-    # station = np.expand_dims(test_labels, axis=1)
-    # print(np.concatenate((prediction, station), axis=1))
 
 for g in GAP:
     process(data, g)
