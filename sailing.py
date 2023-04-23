@@ -58,8 +58,11 @@ TARGET_STATIONS_FILES = ['9月亚帆赛三个站点的风场数据.csv',
 def ecfProcess(file_path, f):
     fpath = os.path.join(file_path, f)
     fn = nc.Dataset(fpath)
+    print(f, fpath, fn.variables.keys())
     fg310 = fn.variables['fg310'][:, lat_index_range.start:lat_index_range.stop,
             lon_index_range.start:lon_index_range.stop]
+    t2 = fn.variables['t2'][:, lat_index_range.start:lat_index_range.stop,
+         lon_index_range.start:lon_index_range.stop]
     # u10 = fn.variables['u10']
     # v10 = fn.variables['v10']
     # U = u10[:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
@@ -67,7 +70,7 @@ def ecfProcess(file_path, f):
     # X = np.concatenate((U, V), axis=0)
     return [re.findall(FILE_NAME_RE, f)[0][2]
         , re.findall(FILE_NAME_RE, f)[0][3]
-        , np.array(fg310).reshape(-1).tolist()]
+        , np.concatenate([np.array(fg310).reshape(-1)], axis=0).tolist()]
 
 
 # 进行时区转换和模式预报对应
@@ -80,13 +83,18 @@ def observeTimeProcess(x):
     return 'F' + dt_obj.astimezone(tz_utc).strftime("%Y%m%d%H")
 
 
-p = [ecfProcess(fpathe, f) for fname in NC_FILE_PATH for fpathe, dirs, fs in os.walk(fname) for f in fs]
+file_names_collect = list(filter(
+    lambda x: 72 >= int(re.findall(FILE_NAME_RE, x[1])[0][2]) >= 3,
+    [(fpathe, f) for fname in NC_FILE_PATH for fpathe, dirs, fs in os.walk(fname) for f in fs]))
+print(file_names_collect)
+p = [ecfProcess(tmp[0], tmp[1]) for tmp in file_names_collect]
 data_df = pd.DataFrame(p, columns=['gap', 'F_time', 'input'])
 data_df.to_pickle("data.pkl")
 
 
-
 # pd process
+
+
 def process_station():
     df = pd.concat([pd.read_csv(TARGET_STATIONS_FILES_PREFIX + x) for x in TARGET_STATIONS_FILES])[
         ['StationNum', 'ObservTimes', 'WindDirect10', 'WindVelocity10', 'ExMaxWindV']]
@@ -104,8 +112,3 @@ def process_station():
 
 df = process_station().reset_index()
 df.to_pickle("station.pkl")
-
-
-
-
-
