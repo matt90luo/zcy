@@ -1,4 +1,3 @@
-from tensorflow import keras
 import tensorflow as tf
 import numpy as np
 import pandas as pd
@@ -7,8 +6,19 @@ from keras import initializers
 from keras import regularizers
 from keras.utils.vis_utils import plot_model
 
-pd.options.display.max_columns = None
-pd.options.display.max_rows = None
+from datetime import datetime
+from datetime import timedelta
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('max_colwidth', 10000)
+pd.set_option('display.width', 10000)
+
+def insert_station_time(t, g):
+    d = datetime.strptime(t, "F%Y%m%d%H")
+    dt = timedelta(hours=g)
+    return (d - dt).strftime("F%Y%m%d%H")
+
 
 "to plot easyly, save as DataFrame: Gap, [station]_observing, [station]_prediction, [station]_ecf"
 
@@ -24,25 +34,38 @@ GAP = list(map(lambda x: "%03d" % x, range(3, 75, 3)))
 
 MODEL_DICT = {}
 
+# 以下是不包含上一个时刻站点值的样本dataframe
+# data_df = pd.read_pickle("data.pkl")
+# df = pd.read_pickle('station.pkl')
+# data = data_df.merge(df, on="F_time", how='inner')
+# data['label'] = data.apply(lambda y: [list(map(lambda a: a[1], y.label))[-1]], axis=1)
+# data = data[['gap', 'input', 'label']]
+# print(data.head(2))
+
+
+#以下是包含上一个时刻站点数据的样本dataframe
 data_df = pd.read_pickle("data.pkl")
 df = pd.read_pickle('station.pkl')
+data_tmp = data_df.merge(df, on="F_time", how='inner')
+#print(data_tmp.head(2))
+data_tmp['F_time'] = data_tmp.apply(lambda x: insert_station_time(x.F_time, int(1)), axis = 1)
+data = data_tmp.merge(df, on="F_time", how='inner')
+data['label'] = data.apply(lambda y: [list(map(lambda a: a[1], y.label_x))[-1]], axis=1)
+data['extra_station'] = data.apply(lambda y: [list(map(lambda a: a[1], y.label_y))[-1]], axis=1)
+data['input'] = data.apply(lambda y: y.input + y.extra_station, axis=1)
+print(data[['gap', 'input', 'label']].head(4))
+data = data[['gap', 'input', 'label']]
 
-data = data_df.merge(df, on="F_time", how='inner')
-
-print(data.head(2))
-
-
-def process(d, gap):
+def process(d, gap, exp):
     # TF traing
     x = d[d['gap'] == gap]
-    x['label'] = x.apply(lambda y: [list(map(lambda a: a[1], y.label))[-1]], axis=1)
     x['r'] = np.random.uniform(size=len(x))
 
     train_examples = np.array(x[x['r'] >= 0.2]['input'].values.tolist())
     test_examples = np.array(x[x['r'] < 0.2]['input'].values.tolist())
     train_labels = np.array(x[x['r'] >= 0.2]['label'].values.tolist())
     test_labels = np.array(x[x['r'] < 0.2]['label'].values.tolist())
-    test_time = x[x['r'] < 0.2]['F_time'].values.tolist()
+    #test_time = x[x['r'] < 0.2]['F_time'].values.tolist()
 
     train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
     test_dataset = tf.data.Dataset.from_tensor_slices((test_examples, test_labels))
@@ -52,13 +75,13 @@ def process(d, gap):
     test_dataset = test_dataset.batch(BATCH_SIZE)
 
     model = tf.keras.Sequential([
-        tf.keras.layers.Dense(256, activation='relu', name='d0',
+        tf.keras.layers.Dense(16, activation='relu', name='d0',
                               kernel_initializer=initializers.RandomNormal(stddev=0.01),
                               bias_initializer=initializers.Zeros(),
                               kernel_regularizer=regularizers.L2(1e-4),
                               bias_regularizer=regularizers.L2(1e-4),
                               activity_regularizer=regularizers.L2(1e-5)),
-        tf.keras.layers.Dense(64, activation='relu', name='d1',
+        tf.keras.layers.Dense(4, activation='relu', name='d1',
                               kernel_initializer=initializers.RandomNormal(stddev=0.01),
                               bias_initializer=initializers.Zeros(),
                               kernel_regularizer=regularizers.L2(1e-4),
@@ -95,14 +118,19 @@ def process(d, gap):
     y = [[int(g)]]*x.shape[0]
     df = pd.DataFrame(x, columns=COLUMNS)
     df['gap'] = pd.DataFrame(y, columns=['gap'])
+    df['exp'] = exp
     RES_DF_LIST.append(df)
     return None
 
+for exp in range(1, 11):
+    for g in GAP:
+        process(data, g, exp)
+    print(f"finish_{exp}")
 
-for g in GAP:
-    process(data, g)
-
-print("finish")
-
+print(len(RES_DF_LIST))
 res_df = pd.concat(RES_DF_LIST, ignore_index=True, sort=False)
+print(res_df.head(1000000))
 res_df.to_pickle("plot.pkl")
+
+
+

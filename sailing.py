@@ -59,18 +59,20 @@ def ecfProcess(file_path, f):
     fpath = os.path.join(file_path, f)
     fn = nc.Dataset(fpath)
     print(f, fpath, fn.variables.keys())
-    fg310 = fn.variables['fg310'][:, lat_index_range.start:lat_index_range.stop,
-            lon_index_range.start:lon_index_range.stop]
-    t2 = fn.variables['t2'][:, lat_index_range.start:lat_index_range.stop,
-         lon_index_range.start:lon_index_range.stop]
-    # u10 = fn.variables['u10']
-    # v10 = fn.variables['v10']
-    # U = u10[:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
-    # V = v10[:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
-    # X = np.concatenate((U, V), axis=0)
+    fg310 = fn.variables['fg310'][:, lat_index_range.start:lat_index_range.stop,lon_index_range.start:lon_index_range.stop]
+    t2 = fn.variables['t2'][:, lat_index_range.start:lat_index_range.stop,lon_index_range.start:lon_index_range.stop]
+    u10 = fn.variables['u10'][:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
+    v10 = fn.variables['v10'][:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
+    u100 = fn.variables['u10'][:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
+    v100 = fn.variables['v10'][:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
     return [re.findall(FILE_NAME_RE, f)[0][2]
-        , re.findall(FILE_NAME_RE, f)[0][3]
-        , np.concatenate([np.array(fg310).reshape(-1)], axis=0).tolist()]
+            , re.findall(FILE_NAME_RE, f)[0][3]
+            , np.concatenate([np.array(fg310).reshape(-1),
+                              np.array(t2).reshape(-1),
+                              np.array(u10).reshape(-1),
+                              np.array(v10).reshape(-1),
+                              np.array(u100).reshape(-1),
+                              np.array(v100).reshape(-1)], axis=0).tolist()]
 
 
 # 进行时区转换和模式预报对应

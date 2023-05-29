@@ -7,6 +7,8 @@ import tensorflow as tf
 
 import matplotlib.pyplot as plt
 
+import collections
+
 print("Found TensorFlow Decision Forests v" + tfdf.__version__)
 
 def split_dataset(dataset, test_ratio=0.30):
@@ -119,6 +121,7 @@ print(tfdf.keras.GradientBoostedTreesModel.predefined_hyperparameters())
 
 
 
+
 #利用keras 做数据预处理 preprocess
 
 body_mass_g = tf.keras.layers.Input(shape=(1,), name="body_mass_g")
@@ -138,6 +141,34 @@ model_4.fit(train_ds)
 print("pre-process")
 print(model_4.summary())
 
+inspector = model_1.make_inspector()
+
+my_tree = inspector.extract_tree(tree_idx=299)
+
+print(my_tree)
+
+# number_of_use[F] will be the number of node using feature F in its condition.
+number_of_use = collections.defaultdict(lambda: 0)
+
+# Iterate over all the nodes in a Depth First Pre-order traversals.
+for node_iter in inspector.iterate_on_nodes():
+
+  if not isinstance(node_iter.node, tfdf.py_tree.node.NonLeafNode):
+    # Skip the leaf nodes
+    continue
+
+  # Iterate over all the features used in the condition.
+  # By default, models are "oblique" i.e. each node tests a single feature.
+  for feature in node_iter.node.condition.features():
+    number_of_use[feature] += 1
+
+print("Number of condition nodes per features:")
+for feature, count in number_of_use.items():
+  print("\t", feature.name, ":", count)
+
+
+inspector = model_1.make_inspector()
+print(inspector)
 
 
 

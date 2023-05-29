@@ -1,19 +1,14 @@
-import math
-
 import numpy as np
 import pandas as pd
 import netCDF4 as nc
 from datetime import datetime, timezone, timedelta
-
-from datetime import time
-
 
 import os
 import re
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
-pd.set_option('max_colwidth',10000)
+pd.set_option('max_colwidth', 10000)
 
 
 
@@ -86,20 +81,28 @@ def observeTimeProcess(x):
 
 
 #file_path = '/Volumes/zcy单位备份/sailing/nc_ecf/2022.09/2022093012/ecfine.I2022093012.057.F2022100221.nc'
-file_path = '/Volumes/zcy单位备份/sailing/nc_ecf/2022.10/2022100100/ecfine.I2022100100.075.F2022100403.nc'
+file_path = '/Volumes/zcy单位备份/sailing/nc_ecf/2022.10/2022100100/ecfine.I2022100100.003.F2022100103.nc'
 fn = nc.Dataset(file_path)
-print(fn.variables.keys())
-print(fn.variables)
-print(lon_index_range)
-print(lat_index_range)
-print([*lon_index_range])
-print([*lat_index_range])
+# print(fn.variables.keys())
+# print(fn.variables['slp'])
+# print(fn.variables['t2'])
+# print(fn.variables['u10'])
+# print(fn.variables['v10'])
+# print(fn.variables['u100'])
+# print(fn.variables['v100'])
+# print(lon_index_range)
+# print(lat_index_range)
+# print([*lon_index_range])
+# print([*lat_index_range])
 fg310 = fn.variables['fg310']
 # u10 = fn.variables['u10']
 # v10 = fn.variables['v10']
 FG = fg310[:, lat_index_range.start:lat_index_range.stop, lon_index_range.start:lon_index_range.stop]
 
 print(type(FG), type(np.array(FG)))
+Bar = np.concatenate([np.array(FG).reshape(-1), np.array(FG).reshape(-1)], axis=0)
+print(Bar)
+print(Bar.shape)
 print(np.array(FG))
 print(np.array(FG).shape)
 print(np.array(FG).reshape(-1))
@@ -108,6 +111,7 @@ print(np.array(FG).reshape(-1)[[[4,]]])
 print(np.array([[1,2,3], [4,5,6]])[:, [1]])
 foo = np.array([[1,2,3], [4,5,6]])[:, [1]]
 print(np.tile(foo, (1, 3)))
+
 
 # tmp_df = fn.to_dataframe()
 # print(tmp_df.info())

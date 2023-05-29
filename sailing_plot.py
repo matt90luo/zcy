@@ -13,6 +13,7 @@ TARGET_STATIONS = ['K2962']
 COLUMNS = [y + "_" + x for x in ['prediction', 'observing', 'ecf'] for y in TARGET_STATIONS]
 
 df = pd.read_pickle('plot.pkl')
+df = df[df['K2962_ecf'] > 0]
 
 res = pd.DataFrame(columns=[])
 
@@ -27,14 +28,16 @@ res = pd.DataFrame(columns=[])
 # res['K2942_rmse_ecf'] = df.groupby(['gap']).apply(
 #     lambda x: np.sqrt(mean_squared_error(x['K2942_ecf'], x['K2942_observing'])))
 
-res['K2962_rmse_clibration'] = df.groupby(['gap']).apply(
+
+res['K2962_rmse_clibration'] = df.groupby(['gap', 'exp']).apply(
     lambda x: np.sqrt(mean_squared_error(x['K2962_prediction'], x['K2962_observing'])))
-res['K2962_rmse_ecf'] = df.groupby(['gap']).apply(
+res['K2962_rmse_ecf'] = df.groupby(['gap', 'exp']).apply(
     lambda x: np.sqrt(mean_squared_error(x['K2962_ecf'], x['K2962_observing'])))
 
-print(res.head(100))
+print(res.head(10000))
 
 res = res.reset_index()
 # print(df[df['gap'] <= 72].head(4))
 
-res.to_excel('sailing_plot_1.xlsx', index=False)
+df.to_excel('sailing_plot_details.xlsx', index=False)
+res.to_excel('sailing_plot.xlsx', index=False)
